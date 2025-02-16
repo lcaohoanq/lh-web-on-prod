@@ -8,6 +8,9 @@ const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWOR
 const dbCollection = process.env.DB_COLLECTION;
 class DatabaseServices {
     constructor() {
+        if (!process.env.MONGO_USER || !process.env.MONGO_PASSWORD || !process.env.DB_NAME) {
+            throw new Error('Missing required environment variables for database connection');
+        }
         this.client = new mongodb_1.MongoClient(uri);
         this.db = this.client.db(process.env.DB_NAME);
     }

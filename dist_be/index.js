@@ -57,11 +57,11 @@ app.all('*', (req, res, next) => {
     next();
 });
 app.use((err, req, res, next) => {
-    if (res.headersSent) {
-        return next(err);
-    }
-    res.status(500);
-    res.render('error', { error: err });
+    console.error(err.stack);
+    res.status(500).json({
+        error: 'Something broke!',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
+    });
 });
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}`);

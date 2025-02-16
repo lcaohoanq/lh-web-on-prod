@@ -4,7 +4,10 @@
     {
       "src": "dist_be/index.js",
       "use": "@vercel/node",
-      "config": { "includeFiles": ["dist_be/**"] }
+      "config": {
+        "includeFiles": ["dist_be/**"],
+        "maxDuration": 10
+      }
     },
     {
       "src": "dist/**",
@@ -23,5 +26,8 @@
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
