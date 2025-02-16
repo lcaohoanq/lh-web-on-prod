@@ -1,71 +1,114 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DatabaseServices = void 0;
-const prisma_services_1 = __importDefault(require("./prisma.services"));
-const auth_1 = require("../utils/auth");
 const dotenv_1 = require("dotenv");
+const mongodb_1 = require("mongodb");
+const User_schema_1 = require("../models/schemas/User.schema");
 (0, dotenv_1.config)({ path: __dirname + '/../../.env' });
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@luuhai-web-db.l3neh.mongodb.net/?retryWrites=true&w=majority&appName=luuhai-web-db`;
 const dbCollection = process.env.DB_COLLECTION;
 class DatabaseServices {
+    constructor() {
+        if (!process.env.MONGO_USER || !process.env.MONGO_PASSWORD || !process.env.DB_NAME) {
+            throw new Error('Missing required environment variables for database connection');
+        }
+        this.client = new mongodb_1.MongoClient(uri);
+        this.db = this.client.db(process.env.DB_NAME);
+    }
     async connect() {
         try {
-            await prisma_services_1.default.$connect();
+            await this.db.command({ ping: 1 });
         }
         catch (error) {
             console.log(error);
             throw error;
         }
     }
-    // User services
-    async createUser(username, password) {
-        const { hashedPassword, salt } = (0, auth_1.hashPassword)(password);
-        return prisma_services_1.default.user.create({
-            data: {
-                username,
-                password: hashedPassword,
-                salt,
-            },
-        });
+    async createAccount(username, password) {
+        try {
+            const account = await this.db.collection(dbCollection).insertOne({ username, password });
+            return account;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    async getAccount(username) {
+        try {
+            const accountDocument = (await this.db
+                .collection(dbCollection)
+                .findOne({ username }));
+            if (accountDocument) {
+                const account = new User_schema_1.User(accountDocument);
+                return account;
+            }
+            return null;
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
     async findUserByUsername(username) {
-        return prisma_services_1.default.user.findUnique({
-            where: { username },
-        });
+        try {
+            const accountDocument = (await this.db
+                .collection(dbCollection)
+                .findOne({ username }));
+            if (accountDocument) {
+                return new User_schema_1.User(accountDocument);
+            }
+        }
+        catch (error) {
+            console.log(error);
+        }
+        return null;
     }
-    // Product services
-    async createProduct(data) {
-        return prisma_services_1.default.product.create({ data });
+    async login(account) {
+        try {
+            const { username, password } = account;
+            const accountDocument = (await this.db
+                .collection(dbCollection)
+                .findOne({ username, password }));
+            if (accountDocument) {
+                return true;
+            }
+        }
+        catch (error) {
+            console.log(error);
+        }
+        return false;
     }
-    async getProducts(userId) {
-        return prisma_services_1.default.product.findMany({
-            where: userId ? { userId } : undefined,
-            include: {
-                category: true,
-                user: true,
-            },
-        });
+    async register(account) {
+        try {
+            const { username, password, salt } = account;
+            // Check if the account already exists
+            const existingAccount = await this.db.collection(dbCollection).findOne({ username });
+            if (existingAccount) {
+                throw new Error('Account already exists');
+            }
+            // If the account does not exist, insert it into the database
+            const insertResult = await this.db
+                .collection(dbCollection)
+                .insertOne({ username, password, salt });
+            // Retrieve the inserted document using the insertedId
+            const accountDocument = await this.db
+                .collection(dbCollection)
+                .findOne({ _id: insertResult.insertedId });
+            if (accountDocument) {
+                return new User_schema_1.User(accountDocument);
+            }
+        }
+        catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
-    // Category services
-    async createCategory(name) {
-        return prisma_services_1.default.category.create({
-            data: { name },
-        });
-    }
-    async getCategories() {
-        return prisma_services_1.default.category.findMany({
-            include: {
-                products: true,
-            },
-        });
-    }
-    async disconnect() {
-        await prisma_services_1.default.$disconnect();
+    async getAllAccounts() {
+        try {
+            return this.db.collection(dbCollection).find().toArray();
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
 }
-exports.DatabaseServices = DatabaseServices;
 const databaseServices = new DatabaseServices();
 exports.default = databaseServices;
