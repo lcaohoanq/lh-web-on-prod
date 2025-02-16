@@ -32,6 +32,8 @@ const express_1 = __importStar(require("express"));
 const users_routers_1 = __importDefault(require("./routes/users.routers"));
 const database_services_1 = __importDefault(require("./services/database.services"));
 const messages_1 = require("./constants/messages");
+const categories_routers_1 = __importDefault(require("./routes/categories.routers"));
+const products_routers_1 = __importDefault(require("./routes/products.routers"));
 (0, dotenv_1.config)({ path: __dirname + '/../.env' });
 const app = (0, express_1.default)();
 const port = process.env.PORT ?? 5173;
@@ -50,6 +52,8 @@ database_services_1.default
     console.error(error);
 });
 app.use('/api/users', users_routers_1.default);
+app.use('/api/categories', categories_routers_1.default);
+app.use('/api/products', products_routers_1.default);
 // this is for logging
 app.all('*', (req, res, next) => {
     console.log('Time', Date.now());
