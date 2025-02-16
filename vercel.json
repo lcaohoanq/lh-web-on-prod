@@ -5,7 +5,7 @@
       "src": "dist_be/index.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist_be/**"],
+        "includeFiles": ["dist_be/**", "prisma/**", "node_modules/.prisma/**"],
         "maxDuration": 10
       }
     },
