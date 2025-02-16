@@ -34,7 +34,7 @@ const database_services_1 = __importDefault(require("./services/database.service
 const messages_1 = require("./constants/messages");
 (0, dotenv_1.config)({ path: __dirname + '/../.env' });
 const app = (0, express_1.default)();
-const port = process.env.PORT ?? 4000;
+const port = process.env.PORT ?? 5173;
 // use middleware to parse json
 const jsonParseMiddleware = (0, express_1.json)();
 app.use(jsonParseMiddleware);
@@ -49,14 +49,11 @@ database_services_1.default
     console.error(messages_1.DATABASE_MESSAGE.CONNECT_FAILED);
     console.error(error);
 });
-app.get('/', (req, res) => {
-    res.send('This is the home page');
-});
-app.use('/users', users_routers_1.default);
+app.use('/api/users', users_routers_1.default);
 // this is for logging
 app.all('*', (req, res, next) => {
     console.log('Time', Date.now());
-    console.log(req);
+    // console.log(req);
     next();
 });
 app.use((err, req, res, next) => {
