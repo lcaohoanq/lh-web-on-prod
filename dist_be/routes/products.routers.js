@@ -21,6 +21,7 @@ exports.products = [
         description: 'This is a sample product',
         price: 99.99,
         images: [
+            'https://images.pexels.com/photos/1379636/pexels-photo-1379636.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
             'https://cdn.tgdd.vn/Products/Images/44/328946/dell-inspiron-15-3530-i7-71043888-1-750x500.jpg',
         ],
         category: 'Electronics',
