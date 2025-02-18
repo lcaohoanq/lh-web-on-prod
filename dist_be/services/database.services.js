@@ -44,7 +44,7 @@ class DatabaseServices {
             throw error;
         }
     }
-    async getProductById(id) {
+    async findProductById(id) {
         try {
             const product = await this.db.collection('products').findOne({ _id: new mongodb_1.ObjectId(id) });
             if (product) {
@@ -115,7 +115,7 @@ class DatabaseServices {
             throw error;
         }
     }
-    async getCategoryById(id) {
+    async findCategoryById(id) {
         try {
             const category = await this.db.collection('categories').findOne({ _id: new mongodb_1.ObjectId(id) });
             if (category) {
@@ -213,6 +213,60 @@ class DatabaseServices {
         catch (error) {
             console.error('Get products by category error:', error);
             throw error;
+        }
+    }
+    // User Operations
+    async findUserByEmail(email) {
+        try {
+            const user = await this.db.collection('users').findOne({ email });
+            return user;
+        }
+        catch (error) {
+            console.error('Find user error:', error);
+            throw error;
+        }
+    }
+    async createUser(userData) {
+        try {
+            const result = await this.db.collection('users').insertOne({
+                ...userData,
+                createdAt: new Date(),
+            });
+            return {
+                ...userData,
+                _id: result.insertedId.toString(),
+            };
+        }
+        catch (error) {
+            console.error('Create user error:', error);
+            throw error;
+        }
+    }
+    async findAllUsers() {
+        try {
+            const users = await this.db.collection('users').find().toArray();
+            return users.map((user) => ({
+                _id: user._id.toString(),
+                email: user.email,
+                name: user.name,
+                password: user.password,
+                role: user.role,
+                createdAt: user.createdAt,
+            }));
+        }
+        catch (error) {
+            console.error('Find all users error:', error);
+            throw error;
+        }
+    }
+    async findUserById(id) {
+        try {
+            const user = await this.db.collection('users').findOne({ _id: new mongodb_1.ObjectId(id) });
+            return user;
+        }
+        catch (error) {
+            console.log('Error in finding user by id:', error);
+            return null;
         }
     }
 }
